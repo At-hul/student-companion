@@ -2,6 +2,7 @@
 .env.*
 !.env.example
 backend/.env
+DEMO_VIDEO_SCRIPT.md
 
 node_modules/
 backend/node_modules/
