@@ -16,6 +16,24 @@ The app uses a local anonymous device identity so students can interact without 
 - Provider-based Flutter state management with loading, error, and empty states.
 - Centralized API base URL configuration through `ApiConfig`.
 
+## Screenshots
+
+### Home Screen
+
+![Home](screenshots/home.png)
+
+### Anonymous Confessions
+
+![Confessions](screenshots/confessions.png)
+
+### Homesickness Support
+
+![Support](screenshots/support.png)
+
+### Similar Student Connect
+
+![Connect](screenshots/connect.png)
+
 ## Architecture
 
 ```text
@@ -83,6 +101,12 @@ POST   /api/connect-requests
 GET    /api/support-resources
 ```
 
+## Live Backend
+
+The production backend is deployed on Render:
+
+[https://student-companion-wcq2.onrender.com](https://student-companion-wcq2.onrender.com)
+
 ## Database Design
 
 The Neon PostgreSQL schema includes:
@@ -149,27 +173,19 @@ Expected APK path:
 mobile/build/app/outputs/flutter-apk/app-release.apk
 ```
 
-## Screenshots
+## APK
 
-### Anonymous Confessions
+A release APK can be generated from:
 
-![Confessions](screenshots/confessions.png)
+```text
+mobile/build/app/outputs/flutter-apk/app-release.apk
+```
 
-### Homesickness Support
+Build command:
 
-![Support](screenshots/support.png)
-
-### Similar Student Connect
-
-![Connect](screenshots/connect.png)
-
-### Student Recommendations
-
-![Recommendations](screenshots/recommendations.png)
-
-### Profile
-
-![Profile](screenshots/profile.png)
+```bash
+flutter build apk --release
+```
 
 ## Future Scope
 
