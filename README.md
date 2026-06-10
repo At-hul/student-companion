@@ -1,38 +1,34 @@
 # Student Companion
 
-Student Companion is a student-support app for college students living away from home. It combines anonymous confessions, homesickness support resources, and interest-based student discovery in one simple Flutter experience backed by an Express API and Neon PostgreSQL.
+## Overview
 
-The README explains the project structure, setup steps, API URL decisions, and final submission workflow.
+Student Companion is a student-support app for college students living away from home. It combines anonymous confessions, homesickness support resources, and interest-based student discovery in one Flutter experience backed by an Express API and Neon PostgreSQL.
+
+The app uses a local anonymous device identity so students can interact without account signup while still supporting confession ownership, reactions, reports, selected interests, recommendations, and connect requests.
 
 ## Features
 
-- Anonymous Confessions Feed: view, create, react/unreact, report, and delete your own confessions.
-- Homesickness Support: warm support cards, detailed tips, and a visible safety disclaimer.
-- Similar Student Connect: select multiple interests, save them, view recommended students, open profiles, and send connect requests.
-- Anonymous local identity: a UUID is stored locally with SharedPreferences so users can interact without account signup.
-- Material 3 Flutter UI with Provider state management.
-
-## Tech Stack
-
-- Flutter
-- Provider
-- SharedPreferences
-- Node.js
-- Express
-- Neon PostgreSQL
+- Anonymous confessions feed with create, react, unreact, report, and owner delete actions.
+- Homesickness support resources with student-friendly guidance and safety messaging.
+- Interest selection for anonymous users.
+- Recommended student discovery based on shared interests.
+- Student profile details and connect request flow.
+- Provider-based Flutter state management with loading, error, and empty states.
+- Centralized API base URL configuration through `ApiConfig`.
 
 ## Architecture
 
 ```text
 Flutter app
-  -> services call REST endpoints using ApiConfig.baseUrl
-  -> providers manage loading, error, and feature state
   -> screens render feature flows
+  -> providers manage loading, error, and feature state
+  -> services call REST endpoints using ApiConfig.baseUrl
+  -> SharedPreferences stores anonymous device identity
 
 Express backend
   -> routes expose /api endpoints
   -> controllers validate input and run SQL queries
-  -> Neon PostgreSQL stores confessions, reactions, reports, interests, students, connect requests, and support resources
+  -> Neon PostgreSQL stores app data
 ```
 
 ## Project Structure
@@ -56,16 +52,62 @@ student-companion/
       screens/       Feature screens
       services/      REST API clients and local preferences
     test/            Flutter widget tests
-  screenshots/       Add final app screenshots here
-  apk/               Optional copy location for final APK
+  screenshots/       App screenshots
+  apk/               Optional copy location for release APK
 ```
 
-## Backend Setup
+## Tech Stack
 
-1. Create `backend/.env` from `backend/.env.example`.
-2. Add your Neon connection string to `DATABASE_URL`.
-3. Optionally add `DATABASE_URL_DIRECT` if you want to run schema and seed scripts from the terminal.
-4. Install dependencies and start the API:
+- Flutter
+- Provider
+- SharedPreferences
+- Node.js
+- Express
+- Neon PostgreSQL
+
+## API Endpoints
+
+```text
+GET    /api/health
+GET    /api/confessions
+POST   /api/confessions
+POST   /api/confessions/:id/react
+DELETE /api/confessions/:id/react
+POST   /api/confessions/:id/report
+DELETE /api/confessions/:id
+GET    /api/interests
+POST   /api/user-interests
+GET    /api/students/recommended?anonymousDeviceId=<id>
+GET    /api/students/:id
+POST   /api/connect-requests
+GET    /api/support-resources
+```
+
+## Database Design
+
+The Neon PostgreSQL schema includes:
+
+- `confessions`: anonymous confession content, reaction counts, ownership, and timestamps.
+- `confession_reactions`: tracks one reaction per anonymous device per confession.
+- `confession_reports`: stores reports for moderation review.
+- `students`: seeded student profile data used for recommendations.
+- `interests`: selectable interest options.
+- `student_interests`: links seeded students to interests.
+- `anonymous_user_interests`: stores selected interests for each anonymous device.
+- `connect_requests`: records connection requests between anonymous users and students.
+- `support_resources`: homesickness and wellness resource cards.
+
+## Setup Instructions
+
+Create `backend/.env` from `backend/.env.example` and add your Neon connection string:
+
+```env
+PORT=4242
+DATABASE_URL="your_neon_postgresql_connection_string"
+DATABASE_URL_DIRECT=
+```
+
+Install and start the backend:
 
 ```bash
 cd backend
@@ -74,63 +116,23 @@ npm run db:setup
 npm run dev
 ```
 
-Production-style start:
-
-```bash
-cd backend
-npm start
-```
-
-Health check:
-
-```text
-GET http://localhost:4242/api/health
-```
-
-## Neon Database Setup
-
-Run the schema and seed scripts after configuring `DATABASE_URL_DIRECT`:
-
-```bash
-cd backend
-npm run db:setup
-```
-
-This creates the tables for confessions, confession reactions, reports, students, interests, anonymous user interests, connect requests, and support resources.
-
-## Flutter Setup
+Run the Flutter app:
 
 ```bash
 cd mobile
 flutter pub get
-flutter run
+flutter run --dart-define=API_BASE_URL=http://<PC_LOCAL_IP>:4242
 ```
 
-The Flutter API base URL is configured in `mobile/lib/core/config/api_config.dart` and supports `--dart-define=API_BASE_URL=...`.
-
-## API Base URL Notes
-
-Use the backend root URL, not a URL ending in `/api`.
+Common API base URLs:
 
 ```text
 Android emulator: http://10.0.2.2:4242
 Chrome/Windows:   http://localhost:4242
 Physical phone:   http://<PC_LOCAL_IP>:4242
-Hosted backend:   https://<your-deployed-backend-url>
 ```
 
-Examples:
-
-```bash
-cd mobile
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:4242
-flutter run -d emulator-5554 --dart-define=API_BASE_URL=http://10.0.2.2:4242
-flutter run --dart-define=API_BASE_URL=http://<PC_LOCAL_IP>:4242
-```
-
-For a physical Android phone, keep the phone and PC on the same Wi-Fi network and make sure the backend is listening on port `4242`.
-
-## APK Build
+Build a release APK:
 
 ```bash
 cd mobile
@@ -147,15 +149,11 @@ Expected APK path:
 mobile/build/app/outputs/flutter-apk/app-release.apk
 ```
 
-For a hosted backend later, replace the physical-phone URL with the deployed backend URL:
-
-```bash
-flutter build apk --release --dart-define=API_BASE_URL=https://<your-deployed-backend-url>
-```
-
 ## Screenshots
 
-Add final screenshots in the `screenshots/` folder before submission. Recommended screenshots:
+Screenshots are stored in the `screenshots/` folder.
+
+Recommended review screenshots:
 
 - Confessions feed
 - Create confession dialog
@@ -165,34 +163,15 @@ Add final screenshots in the `screenshots/` folder before submission. Recommende
 - Recommended students
 - Student profile
 
-## Design Decisions
-
-- Anonymous UUIDs avoid login complexity while still supporting ownership, reactions, reports, and interest matching.
-- Provider keeps state management simple and readable for a student project.
-- Backend validation protects empty confessions, character limits, duplicate reactions, duplicate reports, and duplicate connect requests.
-- API URLs are centralized in `ApiConfig` so screens do not hardcode backend addresses.
-- The UI stays intentionally simple, readable, and student-friendly rather than over-designed.
-
-## Limitations
-
-- Connect requests are demo-oriented and do not include real chat or notifications.
-- Anonymous identity is stored on the device; clearing app data creates a new identity.
-- Support content is general wellness guidance and not a replacement for professional counselling or medical care.
-- The app currently depends on the backend and Neon database being available during demo.
-
 ## Future Scope
 
 - Add authenticated student accounts.
 - Add in-app messaging after connect requests are accepted.
-- Add moderation dashboard for reported confessions.
-- Add campus-specific emergency and counselling contacts.
-- Deploy the backend and configure CI checks.
+- Add moderation tools for reported confessions.
+- Add campus-specific counselling and emergency resources.
+- Improve recommendation matching using shared interests and activity patterns.
 
-## Demo Video
-
-Use [DEMO_VIDEO_SCRIPT.md](DEMO_VIDEO_SCRIPT.md) for a 3-5 minute walkthrough covering the main features, technical explanation, limitations, and future improvements.
-
-## Security
+## Security Notes
 
 Never commit:
 
@@ -203,34 +182,8 @@ Never commit:
 - Tokens
 - Build secrets
 
-Only `.env.example` should be public. The `.gitignore` excludes `.env`, `node_modules/`, `build/`, and `.dart_tool/`.
+Only `.env.example` should be public. The `.gitignore` excludes `.env`, `node_modules/`, Flutter build output, and local generated files.
 
-## Final Verification Commands
+## License
 
-Backend:
-
-```bash
-cd backend
-npm test
-node --check src/server.js
-node --check src/app.js
-```
-
-Mobile:
-
-```bash
-cd mobile
-dart format .
-flutter analyze
-flutter test
-flutter build apk --release --dart-define=API_BASE_URL=http://<PC_LOCAL_IP>:4242
-```
-
-## Commit And Push
-
-```bash
-git status
-git add README.md DEMO_VIDEO_SCRIPT.md backend mobile
-git commit -m "Complete Student Companion submission polish"
-git push
-```
+This project is licensed under the terms in [LICENSE](LICENSE).
