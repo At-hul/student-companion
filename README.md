@@ -151,17 +151,25 @@ mobile/build/app/outputs/flutter-apk/app-release.apk
 
 ## Screenshots
 
-Screenshots are stored in the `screenshots/` folder.
+### Anonymous Confessions
 
-Recommended review screenshots:
+![Confessions](screenshots/confessions.png)
 
-- Confessions feed
-- Create confession dialog
-- Homesickness support resources
-- Support resource detail
-- Interest selection
-- Recommended students
-- Student profile
+### Homesickness Support
+
+![Support](screenshots/support.png)
+
+### Similar Student Connect
+
+![Connect](screenshots/connect.png)
+
+### Student Recommendations
+
+![Recommendations](screenshots/recommendations.png)
+
+### Profile
+
+![Profile](screenshots/profile.png)
 
 ## Future Scope
 
